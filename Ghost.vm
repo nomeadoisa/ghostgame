@@ -1,0 +1,330 @@
+function Ghost.new 0
+push constant 4
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 1
+pop this 1
+push constant 16
+pop this 2
+push constant 0
+pop this 3
+push pointer 0
+call Ghost.draw 1
+pop temp 0
+push pointer 0
+return
+function Ghost.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Ghost.draw 0
+push argument 0
+pop pointer 0
+push pointer 0
+push this 1
+push constant 32
+call Math.multiply 2
+push this 0
+push this 2
+call Math.divide 2
+add
+call Ghost.drawHappyGhost 2
+pop temp 0
+push constant 0
+return
+function Ghost.erase 0
+push argument 0
+pop pointer 0
+push constant 0
+call Screen.setColor 1
+pop temp 0
+push this 0
+push this 1
+push this 0
+push this 2
+add
+push this 1
+push this 2
+add
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+return
+function Ghost.getX 0
+push argument 0
+pop pointer 0
+push this 0
+return
+function Ghost.getY 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Ghost.drawHappyGhost 0
+push argument 0
+pop pointer 0
+push constant 16384
+push argument 1
+add
+pop this 3
+push this 3
+push constant 0
+add
+push constant 8184
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 32
+add
+push constant 16380
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 64
+add
+push constant 25542
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 96
+add
+push constant 1
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 128
+add
+push constant 2065
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 160
+add
+push constant 7225
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 192
+add
+push constant 7225
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 224
+add
+push constant 2065
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 256
+add
+push constant 1
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 288
+add
+push constant 1
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 320
+add
+push constant 1
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 352
+add
+push constant 4081
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 384
+add
+push constant 2017
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 416
+add
+push constant 961
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 448
+add
+push constant 1
+neg
+call Memory.poke 2
+pop temp 0
+push this 3
+push constant 480
+add
+push constant 1
+neg
+call Memory.poke 2
+pop temp 0
+push constant 0
+return
+function Ghost.incSize 0
+push argument 0
+pop pointer 0
+push this 1
+push this 2
+add
+push constant 254
+lt
+push this 0
+push this 2
+add
+push constant 510
+lt
+and
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+call Ghost.erase 1
+pop temp 0
+push this 2
+push constant 2
+add
+pop this 2
+push pointer 0
+call Ghost.draw 1
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function Ghost.decSize 0
+push argument 0
+pop pointer 0
+push this 2
+push constant 2
+gt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+call Ghost.erase 1
+pop temp 0
+push this 2
+push constant 2
+sub
+pop this 2
+push pointer 0
+call Ghost.draw 1
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function Ghost.moveUp 0
+push argument 0
+pop pointer 0
+push this 1
+push constant 15
+gt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+call Ghost.erase 1
+pop temp 0
+push this 1
+push constant 16
+sub
+pop this 1
+push pointer 0
+call Ghost.draw 1
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function Ghost.moveDown 0
+push argument 0
+pop pointer 0
+push this 1
+push this 2
+add
+push constant 239
+lt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+call Ghost.erase 1
+pop temp 0
+push this 1
+push constant 16
+add
+pop this 1
+push pointer 0
+call Ghost.draw 1
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function Ghost.moveLeft 0
+push argument 0
+pop pointer 0
+push this 0
+push constant 15
+gt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+call Ghost.erase 1
+pop temp 0
+push this 0
+push constant 16
+sub
+pop this 0
+push pointer 0
+call Ghost.draw 1
+pop temp 0
+label IF_FALSE0
+push constant 0
+return
+function Ghost.moveRight 0
+push argument 0
+pop pointer 0
+push this 0
+push this 2
+add
+push constant 495
+lt
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+call Ghost.erase 1
+pop temp 0
+push this 0
+push constant 16
+add
+pop this 0
+push pointer 0
+call Ghost.draw 1
+pop temp 0
+label IF_FALSE0
+push constant 0
+return

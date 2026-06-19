@@ -1,0 +1,127 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/09/Square/Square.jack
+
+/** Implements a graphical square. */
+class Ghost {
+
+   field int x, y; // screen location of the square's top-left corner
+   field int size; // length of this square, in pixels
+   field int memAddress;
+
+   /** Constructs a new square with a given location and size. */
+   constructor Ghost new(int Ax, int Ay) {
+      let x = Ax;
+      let y = Ay;
+      let size = 16;
+      let memAddress = 0;
+      do draw();
+      return this;
+   }
+
+   /** Disposes this square. */
+   method void dispose() {
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Draws the square on the screen. */
+   method void draw() {
+      do drawHappyGhost(y*32+(x/size));
+      return;
+   }
+
+   /** Erases the square from the screen. */
+   method void erase() {
+      do Screen.setColor(false);
+      do Screen.drawRectangle(x, y, x + size, y + size);
+      return;
+   }
+
+   method int getX() { return x; }
+   method int getY() { return y; }
+
+   method void drawHappyGhost(int location) {
+      let memAddress = 16384+location;
+      do Memory.poke(memAddress+0, 8184);
+      do Memory.poke(memAddress+32, 16380);
+      do Memory.poke(memAddress+64, 25542);
+      do Memory.poke(memAddress+96, -1);
+      do Memory.poke(memAddress+128, -2065);
+      do Memory.poke(memAddress+160, -7225);
+      do Memory.poke(memAddress+192, -7225);
+      do Memory.poke(memAddress+224, -2065);
+      do Memory.poke(memAddress+256, -1);
+      do Memory.poke(memAddress+288, -1);
+      do Memory.poke(memAddress+320, -1);
+      do Memory.poke(memAddress+352, -4081);
+      do Memory.poke(memAddress+384, -2017);
+      do Memory.poke(memAddress+416, -961);
+      do Memory.poke(memAddress+448, -1);
+      do Memory.poke(memAddress+480, -1);
+      return;
+   }
+
+
+
+    /** Increments the square size by 2 pixels. */
+   method void incSize() {
+      if (((y + size) < 254) & ((x + size) < 510)) {
+         do erase();
+         let size = size + 2;
+         do draw();
+      }
+      return;
+   }
+
+   /** Decrements the square size by 2 pixels. */
+   method void decSize() {
+      if (size > 2) {
+         do erase();
+         let size = size - 2;
+         do draw();
+      }
+      return;
+   }
+
+   /** Moves the ghost up by 16 pixels. */
+   method void moveUp() {
+      if (y > 15) {
+         do erase();
+         let y = y - 16;
+         do draw();
+      }
+      return;
+   }
+
+   /** Moves the square down by 16 pixels. */
+   method void moveDown() {
+      if ((y + size) < 239) {
+         do erase();
+         let y = y + 16;
+         do draw();
+      }
+      return;
+   }
+
+   /** Moves the ghost left by 16 pixels. */
+   method void moveLeft() {
+      if (x > 15) {
+         do erase();
+         let x = x - 16;
+         do draw();
+      }
+      return;
+   }
+
+   /** Moves the square right by 16 pixels. */
+   method void moveRight() {
+      if ((x + size) < 495) {
+         do erase();
+         let x = x + 16;
+         do draw();
+      }
+      return;
+   }
+}

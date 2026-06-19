@@ -1,0 +1,152 @@
+/** segundo jogador */
+class Pacman {
+   // variáveis
+   field int x, y;          // Posição do Pac-Man na tela (canto superior esquerdo)
+   field int size;          // Tamanho do sprite (16 pixels)
+   field int currentFrame;  // Controla a animação: 0 = boca fechada, 1 = boca aberta
+
+   /**cria o p2 em uma posição inicial aleatoria */
+   constructor Pacman new(int Ax, int Ay) {
+      let x = Ax;
+      let y = Ay;
+      let size = 16;          // o sprite ocupa um quadrado de 16x16
+      let currentFrame = 0;   // ele tem 2 frames, que faz aquele "waka-waka" dele, ele começa com o bico fechado
+      do draw();              // desenha o frame assim que ele e construido
+      return this;
+   }
+
+   /**Desloca memoria quando o jogo termina*/
+   method void dispose() {
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Função de animação pro p2, que faz o "waka-waka" :]*/
+   method void toggleFrame() {
+       if (currentFrame = 0) {
+           let currentFrame = 1;
+       } else {
+           let currentFrame = 0;
+       }
+       return;
+   }
+
+   /** Desenha o Pac-Man na tela baseado na variável currentFrame */
+   method void draw() {
+      var int location;
+      // Formula mágica do Hack: (Linha * 32) + (Coluna / 16)
+      let location = (y * 32) + (x / size);
+      
+      // Checa qual frame deve ser desenhado agora
+      if (currentFrame = 0) {
+          do drawMouthClosed(location);
+      } else {
+          do drawMouthOpenRight(location);
+      }
+      return;
+   }
+
+   method int getX() { return x; }
+   method int getY() { return y; }
+   
+   method void closeMouth() {
+       let currentFrame = 0;
+       do draw();
+       return;
+   }
+
+   /** Apaga o p2 da tela atual (desenhando um quadrado branco por cima) */
+   method void erase() {
+      do Screen.setColor(false); // Define a cor para "falso" (Branco/Apagado)
+      do Screen.drawRectangle(x, y, x + size, y + size);
+      return;
+   }
+
+   /** Move pra cima */
+   method void moveUp() {
+      if (y > 15) { // Verifica se não está batendo no teto
+         do erase(); // 1. Apaga da posição antiga
+         let y = y - 16; // 2. Atualiza a posição (sobe 1 bloco de 16 pixels)
+         do toggleFrame(); // 3. Troca a imagem para dar a ilusão de movimento
+         do draw(); // 4. Desenha na nova posição
+      }
+      return;
+   }
+
+   /** Move pra Baixo */
+   method void moveDown() {
+      if ((y + size) < 239) { // Verifica se não está batendo no chão
+         do erase();
+         let y = y + 16;
+         do toggleFrame();
+         do draw();
+      }
+      return;
+   }
+
+   /** Move pra Esquerda */
+   method void moveLeft() {
+      if (x > 15) { // Verifica limite da parede esquerda
+         do erase();
+         let x = x - 16;
+         do toggleFrame();
+         do draw();
+      }
+      return;
+   }
+
+   /** Move pra Direita */
+   method void moveRight() {
+      if ((x + size) < 495) { // Verifica limite da parede direita
+         do erase();
+         let x = x + 16;
+         do toggleFrame();
+         do draw();
+      }
+      return;
+   }
+
+   method void drawMouthClosed(int location) {
+       var int memAddress;
+       let memAddress = 16384 + location;
+       do Memory.poke(memAddress + 0, 2016);     // Linha 1
+       do Memory.poke(memAddress + 32, 8184);    // Linha 2
+       do Memory.poke(memAddress + 64, 16380);   // Linha 3
+       do Memory.poke(memAddress + 96, 32766);   // Linha 4
+       do Memory.poke(memAddress + 128, 32766);  // Linha 5
+       do Memory.poke(memAddress + 160, -1);     // Linha 6
+       do Memory.poke(memAddress + 192, -1);     // Linha 7
+       do Memory.poke(memAddress + 224, -1);     // Linha 8
+       do Memory.poke(memAddress + 256, -1);     // Linha 9
+       do Memory.poke(memAddress + 288, -1);     // Linha 10
+       do Memory.poke(memAddress + 320, -1);     // Linha 11
+       do Memory.poke(memAddress + 352, 32766);  // Linha 12
+       do Memory.poke(memAddress + 384, 32766);  // Linha 13
+       do Memory.poke(memAddress + 416, 16380);  // Linha 14
+       do Memory.poke(memAddress + 448, 8184);   // Linha 15
+       do Memory.poke(memAddress + 480, 2016);   // Linha 16
+       return;
+   }
+
+   method void drawMouthOpenRight(int location) {
+       var int memAddress;
+       let memAddress = 16384 + location;
+       do Memory.poke(memAddress + 0, 2016);     // Linha 1
+       do Memory.poke(memAddress + 32, 8184);    // Linha 2
+       do Memory.poke(memAddress + 64, 16380);   // Linha 3
+       do Memory.poke(memAddress + 96, 32766);   // Linha 4
+       do Memory.poke(memAddress + 128, 4094);   // Linha 5
+       do Memory.poke(memAddress + 160, 1023);   // Linha 6
+       do Memory.poke(memAddress + 192, 255);    // Linha 7
+       do Memory.poke(memAddress + 224, 63);     // Linha 8
+       do Memory.poke(memAddress + 256, 63);     // Linha 9
+       do Memory.poke(memAddress + 288, 255);    // Linha 10
+       do Memory.poke(memAddress + 320, 1023);   // Linha 11
+       do Memory.poke(memAddress + 352, 4094);   // Linha 12
+       do Memory.poke(memAddress + 384, 32766);  // Linha 13
+       do Memory.poke(memAddress + 416, 16380);  // Linha 14
+       do Memory.poke(memAddress + 448, 8184);   // Linha 15
+       do Memory.poke(memAddress + 480, 2016);   // Linha 16
+       return;
+   }
+}
