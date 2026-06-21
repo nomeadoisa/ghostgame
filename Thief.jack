@@ -1,0 +1,96 @@
+// Classe que representa o Ladrão (Player 2)
+// Ele é controlado pelas teclas W/A/S/D e o objetivo dele é roubar as moedas e fugir.
+// O sprite é um ladrãozinho simpático com capuz e máscara preta nos olhos.
+
+class Thief {
+    field int x, y;          // Posição na tela (pixels)
+    field int size;          // Tamanho do sprite (16x16)
+
+    constructor Thief new(int Ax, int Ay) {
+        let x = Ax;
+        let y = Ay;
+        let size = 16;
+        do draw();
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method int getX() { return x; }
+    method int getY() { return y; }
+
+    // Desenha o sprite do ladrão com capuz e máscara
+    method void draw() {
+        var int location;
+        var int memAddress;
+        
+        let location = (y * 32) + (x / size);
+        let memAddress = 16384 + location;
+        
+        // Linhas de pixels do ladrãozinho
+        do Memory.poke(memAddress + 0, 2016);     // Capuz (topo)
+        do Memory.poke(memAddress + 32, 4080);
+        do Memory.poke(memAddress + 64, 8060);
+        do Memory.poke(memAddress + 96, 16380);
+        do Memory.poke(memAddress + 128, 12300);  // Rosto / Máscara começa
+        do Memory.poke(memAddress + 160, 26214);  // Olhos do ladrão
+        do Memory.poke(memAddress + 192, 26214);
+        do Memory.poke(memAddress + 224, 12300);
+        do Memory.poke(memAddress + 256, 16380);  // Máscara cobrindo o queixo
+        do Memory.poke(memAddress + 288, 8060);
+        do Memory.poke(memAddress + 320, 4080);   // Pescoço
+        do Memory.poke(memAddress + 352, 2016);
+        do Memory.poke(memAddress + 384, 8060);   // Ombros / Roupa listrada
+        do Memory.poke(memAddress + 416, 13260);
+        do Memory.poke(memAddress + 448, 26214);
+        do Memory.poke(memAddress + 480, 0);
+        return;
+    }
+
+    // Apaga o ladrão pintando um quadrado branco por cima
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y, x + size - 1, y + size - 1);
+        return;
+    }
+
+    // Funções de movimentação
+    method void moveUp() {
+        if (y > 15) {
+            do erase();
+            let y = y - 16;
+            do draw();
+        }
+        return;
+    }
+
+    method void moveDown() {
+        if (y < 240) {
+            do erase();
+            let y = y + 16;
+            do draw();
+        }
+        return;
+    }
+
+    method void moveLeft() {
+        if (x > 15) {
+            do erase();
+            let x = x - 16;
+            do draw();
+        }
+        return;
+    }
+
+    method void moveRight() {
+        if (x < 496) {
+            do erase();
+            let x = x + 16;
+            do draw();
+        }
+        return;
+    }
+}

@@ -1,0 +1,198 @@
+/** Implementa o Jogo*/
+class GhostGame {
+   field int ghostDirection;
+   field int pacmanDirection;
+   
+   field Random random;
+   field Ghost ghost;
+   field Pacman pacman;
+
+   field int loopCount;   // Conta os ciclos para formar 1 segundo
+   field int phase;       // 1 = estagio de distancia, 2 = o jogo começa
+   field int secondsLeft; // Relógio regressivo
+
+   constructor GhostGame new() {
+      let random = Random.new(19);
+      let ghost = null;
+      let pacman = null;
+      do reset(); // Chama a função que monta o jogo
+      return this;
+   }
+
+   /** Monta o cenário inicial ou reinicia o jogo após o Game Over */
+   method void reset() {
+      do Screen.clearScreen();
+
+      // Limpa os personagens antigos se estiver reiniciando
+      if (~(ghost = null)) { do ghost.dispose(); }
+      if (~(pacman = null)) { do pacman.dispose(); }
+
+      // Posição Y = 16 para não nascer embaixo dos textos do tempo
+      let ghost = Ghost.new(0, 16); 
+      let pacman = Pacman.new(192, 192); 
+
+      let ghostDirection = 0;
+      let pacmanDirection = 0;
+      
+      let loopCount = 0;
+      let phase = 1;        // Começa na fase de vantagem
+      let secondsLeft = 3;  // Dá 3 segundos para o Pac-Man fugir
+
+      do drawUI();
+      return;
+   }
+
+   method void dispose() {
+      do ghost.dispose();
+      do pacman.dispose(); 
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Desenha o relógio e a fase no topo da tela */
+   method void drawUI() {
+       // Cria uma tarja preta/branca no topo para o relógio
+       do Screen.setColor(false);
+       do Screen.drawRectangle(0, 0, 511, 15);
+
+       do Output.moveCursor(0, 0);
+       if (phase = 1) {
+           do Output.printString("Corra! Fantasma parado por: ");
+       } else {
+           do Output.printString("Fuga! Sobreviva por: ");
+       }
+       do Output.printInt(secondsLeft);
+       do Output.printString(" seg   ");
+       return;
+   }
+
+   /** Congela a tela e exibe o vencedor */
+   method void gameOver(int winner) {
+       do Screen.clearScreen();
+       do Output.moveCursor(11, 20); // Centraliza na tela
+       
+       if (winner = 1) {
+           do Output.printString("Game Over - Jogador 1 vence");
+       } else {
+           do Output.printString("Game Over - Jogador 2 vence");
+       }
+
+       // Pausa de 3 segundos e reinicia o jogo automaticamente
+       do Sys.wait(3000);
+       do reset();
+       return;
+   }
+
+   /** Move os jogadores e lida com a animação da parede */
+   method void movePlayers() {
+      var int oldPX, oldPY;
+      
+      // Guarda a posição do p2 antes de tentar andar
+      let oldPX = pacman.getX();
+      let oldPY = pacman.getY();
+
+      // p1 SÓ ANDA se estiver na phase 2 
+      if (phase = 2) {
+         if (ghostDirection = 1) { do ghost.moveUp(); }
+         if (ghostDirection = 2) { do ghost.moveDown(); }
+         if (ghostDirection = 3) { do ghost.moveLeft(); }
+         if (ghostDirection = 4) { do ghost.moveRight(); }
+      }
+
+      // p1 anda nas duas fases
+      if (pacmanDirection = 1) { do pacman.moveUp(); }
+      if (pacmanDirection = 2) { do pacman.moveDown(); }
+      if (pacmanDirection = 3) { do pacman.moveLeft(); }
+      if (pacmanDirection = 4) { do pacman.moveRight(); }
+
+      // LÓGICA DA BOCA FECHADA
+      if (pacmanDirection = 0) { 
+          // Se apertou E para parar, fecha a boca
+          do pacman.closeMouth(); 
+      } else {
+          // Se tentou andar mas bateu na parede (posição não mudou), fecha a boca
+          if ((oldPX = pacman.getX()) & (oldPY = pacman.getY())) {
+              do pacman.closeMouth();
+          }
+      }
+
+      do Sys.wait(50);
+      return;
+   }
+
+   /** loop principal */
+   method void run() {
+      var char key;
+      var boolean exit;
+      var boolean collided;
+      var int oldGX, oldGY, oldPX, oldPY;
+
+      let exit = false;
+
+      while (~exit) {
+         let key = Keyboard.keyPressed();
+         if (key = 140) { let exit = true; } 
+         
+         // Controles p1
+         if (key = 131) { let ghostDirection = 1; }
+         if (key = 133) { let ghostDirection = 2; }
+         if (key = 130) { let ghostDirection = 3; }
+         if (key = 132) { let ghostDirection = 4; }
+         if (key = 46)  { let ghostDirection = 0; }
+
+         // Controles p2
+         if (key = 87) { let pacmanDirection = 1; }
+         if (key = 83) { let pacmanDirection = 2; }
+         if (key = 65) { let pacmanDirection = 3; }
+         if (key = 68) { let pacmanDirection = 4; }
+         if (key = 69) { let pacmanDirection = 0; }
+
+         // Salva posições antes de mover para detectar cruzamento
+         let oldGX = ghost.getX();
+         let oldGY = ghost.getY();
+         let oldPX = pacman.getX();
+         let oldPY = pacman.getY();
+
+         do movePlayers();
+
+         // LÓGICA DE COLISÃO
+         let collided = false;
+         
+         // Colisão Direta (estão na mesma casa)
+         if ((ghost.getX() = pacman.getX()) & (ghost.getY() = pacman.getY())) { 
+             let collided = true; 
+         }
+         // Colisão por Cruzamento (passaram um por dentro do outro)
+         if ((ghost.getX() = oldPX) & (ghost.getY() = oldPY) & (pacman.getX() = oldGX) & (pacman.getY() = oldGY)) { 
+             let collided = true; 
+         }
+
+         // Game Over se bateu durante a phase 2
+         if (collided & (phase = 2)) {
+             do gameOver(1); // Jogador 1 Venceu
+         }
+
+         // logica do tempo
+         // Aproximadamente 20 repetições equivalem a 1 segundo
+         let loopCount = loopCount + 1;
+         if (loopCount = 20) {
+             let loopCount = 0;
+             let secondsLeft = secondsLeft - 1;
+
+             if (secondsLeft < 0) { // O tempo de uma fase acabou
+                 if (phase = 1) {
+                     // Fim da vantagem. Começa o jogo de verdade!
+                     let phase = 2;
+                     let secondsLeft = 30; //Aqui e onde muda o tempo, coloquei 30 so pra poder brincar
+                 } else {
+                     // Fim dos 7 segundos. Pac-Man sobreviveu!
+                     do gameOver(2); // Jogador 2 Venceu
+                 }
+             }
+             // Só desenha o relógio de novo se o segundo mudou (evita piscar a tela)
+             do drawUI(); 
+         }
+      }
+      return;
+   }
+}

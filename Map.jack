@@ -1,0 +1,203 @@
+// Classe que cuida de desenhar o mapa e checar colisão com as paredes.
+// Também cuida dos sacos de moedas (o dinheiro que o ladrão tem que roubar).
+// Feito para o projeto 6 de forma simples pra apresentar na aula!
+
+class Map {
+    field int mapType; // Guarda qual mapa foi sorteado (0, 1 ou 2)
+    
+    // Status dos 5 sacos de moedas (false = ainda não pegou, true = já pegou)
+    field boolean coin0, coin1, coin2, coin3, coin4;
+    
+    // Coordenadas X (coluna) e Y (linha) de cada moeda no grid
+    field int c0x, c0y;
+    field int c1x, c1y;
+    field int c2x, c2y;
+    field int c3x, c3y;
+    field int c4x, c4y;
+
+    constructor Map new(int type) {
+        let mapType = type;
+        
+        // Começa com nenhuma moeda coletada
+        let coin0 = false;
+        let coin1 = false;
+        let coin2 = false;
+        let coin3 = false;
+        let coin4 = false;
+
+        // Configura as posições das moedas dependendo do mapa sorteado
+        if (mapType = 0) {
+            let c0x = 3;  let c0y = 3;
+            let c1x = 28; let c1y = 3;
+            let c2x = 15; let c2y = 4;
+            let c3x = 3;  let c3y = 13;
+            let c4x = 28; let c4y = 13;
+        }
+        if (mapType = 1) {
+            let c0x = 15; let c0y = 3;
+            let c1x = 3;  let c1y = 8;
+            let c2x = 28; let c2y = 8;
+            let c3x = 10; let c3y = 13;
+            let c4x = 21; let c4y = 13;
+        }
+        if (mapType = 2) {
+            let c0x = 6;  let c0y = 3;
+            let c1x = 25; let c1y = 3;
+            let c2x = 15; let c2y = 5;
+            let c3x = 6;  let c3y = 13;
+            let c4x = 25; let c4y = 13;
+        }
+
+        return this;
+    }
+
+    // Libera a memória do objeto
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    // Função principal de colisão: diz se uma coordenada do grid é parede ou não
+    method boolean isWall(int col, int row) {
+        // As bordas da tela são sempre paredes para os players não fugirem
+        if (col < 1) { return true; }
+        if (col > 30) { return true; }
+        if (row < 2) { return true; } // Row 0 e 1 são a barra de status/tempo
+        if (row > 14) { return true; }
+
+        // MAPA 0: O Labirinto com Barreiras Verticais e Horizontais
+        if (mapType = 0) {
+            // Paredes verticais longas
+            if ((col = 8) & (row > 1) & (row < 7)) { return true; }
+            if ((col = 8) & (row > 9) & (row < 15)) { return true; }
+            if ((col = 23) & (row > 1) & (row < 7)) { return true; }
+            if ((col = 23) & (row > 9) & (row < 15)) { return true; }
+            
+            // Paredes horizontais no meio
+            if ((row = 8) & (col > 3) & (col < 13)) { return true; }
+            if ((row = 8) & (col > 18) & (col < 28)) { return true; }
+            
+            // Bloco central
+            if (((col = 15) | (col = 16)) & ((row = 7) | (row = 8))) { return true; }
+        }
+
+        // MAPA 1: Os Blocos Quadrados Dispersos
+        if (mapType = 1) {
+            // Bloco 2x2 superior esquerdo
+            if (((col = 5) | (col = 6)) & ((row = 4) | (row = 5))) { return true; }
+            // Bloco 2x2 superior direito
+            if (((col = 25) | (col = 26)) & ((row = 4) | (row = 5))) { return true; }
+            // Bloco 2x2 inferior esquerdo
+            if (((col = 5) | (col = 6)) & ((row = 11) | (row = 12))) { return true; }
+            // Bloco 2x2 inferior direito
+            if (((col = 25) | (col = 26)) & ((row = 11) | (row = 12))) { return true; }
+            
+            // Barra horizontal central
+            if ((row = 8) & (col > 9) & (col < 22)) { return true; }
+        }
+
+        // MAPA 2: O Formato "H" com cantos bloqueados
+        if (mapType = 2) {
+            // Estrutura do H central (duas colunas e uma viga horizontal)
+            if ((col = 10) & (row > 2) & (row < 13)) { return true; }
+            if ((col = 21) & (row > 2) & (row < 13)) { return true; }
+            if ((row = 8) & (col > 9) & (col < 22)) { return true; }
+            
+            // Barreiras extras nos cantos para dificultar fuga
+            if ((col = 4) & (row > 3) & (row < 7)) { return true; }
+            if ((col = 27) & (row > 3) & (row < 7)) { return true; }
+            if ((col = 4) & (row > 9) & (row < 13)) { return true; }
+            if ((col = 27) & (row > 9) & (row < 13)) { return true; }
+        }
+
+        return false;
+    }
+
+    // Desenha as paredes e as moedas na tela
+    method void draw() {
+        var int col, row;
+        
+        // Limpa a tela antes de desenhar
+        do Screen.clearScreen();
+
+        // 1. Desenha as paredes (preto)
+        do Screen.setColor(true);
+        let col = 0;
+        while (col < 32) {
+            let row = 1; // Começa na linha 1 para respeitar a UI
+            while (row < 16) {
+                if (isWall(col, row)) {
+                    // Desenha um quadrado de 16x16 pixels para cada parede
+                    do Screen.drawRectangle(col * 16, row * 16, (col * 16) + 15, (row * 16) + 15);
+                }
+                let row = row + 1;
+            }
+            let col = col + 1;
+        }
+
+        // 2. Desenha os sacos de moedas que ainda não foram pegos
+        if (~coin0) { do drawCoin(c0x, c0y); }
+        if (~coin1) { do drawCoin(c1x, c1y); }
+        if (~coin2) { do drawCoin(c2x, c2y); }
+        if (~coin3) { do drawCoin(c3x, c3y); }
+        if (~coin4) { do drawCoin(c4x, c4y); }
+
+        return;
+    }
+
+    // Desenha um saquinho/moeda bonitinho (um circulo vazado no meio)
+    method void drawCoin(int col, int row) {
+        var int x, y;
+        let x = (col * 16) + 8;
+        let y = (row * 16) + 8;
+        
+        do Screen.setColor(true);
+        do Screen.drawCircle(x, y, 4); // Moeda maior
+        do Screen.setColor(false);
+        do Screen.drawCircle(x, y, 1); // Furo da moeda (estilo chinês retrô)
+        return;
+    }
+
+    // Apaga a moeda da tela quando o ladrão passa por cima
+    method void eraseCoin(int col, int row) {
+        do Screen.setColor(false);
+        // Desenha um retangulo branco para apagar a moeda
+        do Screen.drawRectangle(col * 16, row * 16, (col * 16) + 15, (row * 16) + 15);
+        return;
+    }
+
+    // Checa se o Ladrão pisou em alguma moeda. Se sim, coleta ela!
+    method boolean checkCoinCollection(int col, int row) {
+        if (~coin0 & (col = c0x) & (row = c0y)) {
+            let coin0 = true;
+            do eraseCoin(col, row);
+            return true;
+        }
+        if (~coin1 & (col = c1x) & (row = c1y)) {
+            let coin1 = true;
+            do eraseCoin(col, row);
+            return true;
+        }
+        if (~coin2 & (col = c2x) & (row = c2y)) {
+            let coin2 = true;
+            do eraseCoin(col, row);
+            return true;
+        }
+        if (~coin3 & (col = c3x) & (row = c3y)) {
+            let coin3 = true;
+            do eraseCoin(col, row);
+            return true;
+        }
+        if (~coin4 & (col = c4x) & (row = c4y)) {
+            let coin4 = true;
+            do eraseCoin(col, row);
+            return true;
+        }
+        return false;
+    }
+
+    // Retorna se o ladrão já roubou todos os 5 sacos
+    method boolean allCoinsCollected() {
+        return (coin0 & coin1 & coin2 & coin3 & coin4);
+    }
+}

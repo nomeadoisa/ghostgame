@@ -1,0 +1,96 @@
+// Classe que representa o Policial (Player 1)
+// Controlado pelas setas do teclado. O sprite é uma viatura de polícia bem retrô.
+// Feito de forma simples pro trabalho escolar.
+
+class Cop {
+    field int x, y;          // Posição no grid (pixels)
+    field int size;          // Tamanho do sprite (16x16)
+
+    constructor Cop new(int Ax, int Ay) {
+        let x = Ax;
+        let y = Ay;
+        let size = 16;
+        do draw();
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method int getX() { return x; }
+    method int getY() { return y; }
+
+    // Desenha a viatura de polícia na tela
+    method void draw() {
+        var int location;
+        var int memAddress;
+        
+        let location = (y * 32) + (x / size);
+        let memAddress = 16384 + location;
+        
+        // Linhas de pixel da viatura desenhadas na tela do Hack
+        do Memory.poke(memAddress + 0, 0);
+        do Memory.poke(memAddress + 32, 960);      // Giroflex azul/vermelho no teto
+        do Memory.poke(memAddress + 64, 2016);
+        do Memory.poke(memAddress + 96, 4080);
+        do Memory.poke(memAddress + 128, 16380);   // Teto do carro
+        do Memory.poke(memAddress + 160, 32766);
+        do Memory.poke(memAddress + 192, 25410);   // Janelas laterais
+        do Memory.poke(memAddress + 224, 25410);
+        do Memory.poke(memAddress + 256, -1);      // Corpo do carro (tudo preto)
+        do Memory.poke(memAddress + 288, -1);
+        do Memory.poke(memAddress + 320, -15363);  // Faróis e grades
+        do Memory.poke(memAddress + 352, -1);
+        do Memory.poke(memAddress + 384, 32766);
+        do Memory.poke(memAddress + 416, 12300);   // Rodas do carro
+        do Memory.poke(memAddress + 448, 12300);
+        do Memory.poke(memAddress + 480, 0);
+        return;
+    }
+
+    // Apaga o policial da tela pintando um quadrado branco por cima
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y, x + size - 1, y + size - 1);
+        return;
+    }
+
+    // Funções de movimento simples
+    method void moveUp() {
+        if (y > 15) {
+            do erase();
+            let y = y - 16;
+            do draw();
+        }
+        return;
+    }
+
+    method void moveDown() {
+        if (y < 240) {
+            do erase();
+            let y = y + 16;
+            do draw();
+        }
+        return;
+    }
+
+    method void moveLeft() {
+        if (x > 15) {
+            do erase();
+            let x = x - 16;
+            do draw();
+        }
+        return;
+    }
+
+    method void moveRight() {
+        if (x < 496) {
+            do erase();
+            let x = x + 16;
+            do draw();
+        }
+        return;
+    }
+}

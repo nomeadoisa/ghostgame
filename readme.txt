@@ -24,3 +24,7 @@ Qualquer outra coisa que tu quer adicionar por cima além disso
 Depois, fala comigo que ai a gente ve junto o que falta e da aquela "inovada" de sempre. 
 
 - Isaque
+
+Top, Isaque. A logica ficou perfeita, como te disse pelo whatsapp mudei um pouco o tema, troquei de pacman para policia e ladrão.
+
+Tambem tomei a liberdade de não limitar o jogo a só um mapa, construi 3 mapass e adicionei um random para selecionar aleatoriamente os mapas.
