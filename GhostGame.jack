@@ -1,10 +1,8 @@
 // Classe principal que controla o jogo de Policial e Ladrão.
-// Embora o arquivo se chame GhostGame.jack para obedecer às especificações do projeto,
-// toda a lógica foi adaptada para o tema de Policial e Ladrão!
-// Feito por um estudante para rodar no simulador do Nand2Tetris.
+// Adaptada para usar a classe Ghost de modo a respeitar a árvore de arquivos exigida.
 
 class GhostGame {
-    field Cop cop;              // Nosso Policial (P1)
+    field Ghost cop;            // Nosso Policial (P1) usando a classe Ghost mapeada
     field Thief thief;          // Nosso Ladrão (P2)
     field Map map;              // O mapa sorteado
     field Random random;        // Gerador de aleatoriedade
@@ -18,7 +16,6 @@ class GhostGame {
     field int coinsCollected;   // Moedas que o ladrão já pegou (0 a 5)
 
     constructor GhostGame new() {
-        // Inicializa as variáveis básicas
         let cop = null;
         let thief = null;
         let map = null;
@@ -26,7 +23,6 @@ class GhostGame {
         return this;
     }
 
-    // Libera a memória de tudo
     method void dispose() {
         if (~(cop = null)) { do cop.dispose(); }
         if (~(thief = null)) { do thief.dispose(); }
@@ -42,23 +38,21 @@ class GhostGame {
         var int dx, dy;
         var boolean found;
 
-        // Limpa personagens antigos se for um reinício
         if (~(cop = null)) { do cop.dispose(); }
         if (~(thief = null)) { do thief.dispose(); }
         if (~(map = null)) { do map.dispose(); }
 
-        // Sorteia um dos 3 mapas (0, 1 ou 2)
         let map = Map.new(random.randRange(2));
         do map.draw();
 
-        // 1. Sorteia posição do policial (Cop) em local livre
+        // 1. Sorteia posição do policial (Ghost) em local livre
         let found = false;
         while (~found) {
-            let cx = random.randRange(29) + 1; // Colunas 1 a 30
-            let cy = random.randRange(12) + 2; // Linhas 2 a 14 (UI ocupa 0 e 1)
+            let cx = random.randRange(29) + 1;
+            let cy = random.randRange(12) + 2;
             if (~(map.isWall(cx, cy))) {
                 let found = true;
-                let cop = Cop.new(cx * 16, cy * 16);
+                let cop = Ghost.new(cx * 16, cy * 16);
             }
         }
 
@@ -68,15 +62,12 @@ class GhostGame {
             let tx = random.randRange(29) + 1;
             let ty = random.randRange(12) + 2;
             
-            // Checa se a casa não é parede
             if (~(map.isWall(tx, ty))) {
-                // Calcula distância Manhattan simples para não spawnar colado no policial
                 let dx = tx - cx;
                 let dy = ty - cy;
                 if (dx < 0) { let dx = -dx; }
                 if (dy < 0) { let dy = -dy; }
                 
-                // Se a distância for razoável (mais de 6 blocos), aceita!
                 if ((dx + dy) > 6) {
                     let found = true;
                     let thief = Thief.new(tx * 16, ty * 16);
@@ -84,12 +75,11 @@ class GhostGame {
             }
         }
 
-        // Reseta direções e status
         let copDirection = 0;
         let thiefDirection = 0;
         let loopCount = 0;
-        let phase = 1;         // Começa com a vantagem do ladrão
-        let secondsLeft = 3;   // Ladrão tem 3 segundos pra fugir
+        let phase = 1;
+        let secondsLeft = 3;
         let coinsCollected = 0;
 
         do drawUI();
@@ -99,7 +89,7 @@ class GhostGame {
     // Desenha a interface do topo (tempo e placar de moedas)
     method void drawUI() {
         do Screen.setColor(false);
-        do Screen.drawRectangle(0, 0, 511, 31); // Limpa a barra de status
+        do Screen.drawRectangle(0, 0, 511, 31);
 
         do Output.moveCursor(0, 2);
         if (phase = 1) {
@@ -121,13 +111,12 @@ class GhostGame {
         do Screen.clearScreen();
         do Output.moveCursor(10, 15);
         
+        // eu tentei fazer como tinha sugerido no pdf mas nao deu muito certo nao, encontrei uma maneira fazendo assim
         if (winner = 1) {
-            // Policial venceu, ladrão perdeu
             do Output.printString("GAME OVER - JOGADOR 2 PERDEU!");
             do Output.moveCursor(12, 18);
             do Output.printString("O policial capturou o ladrao!");
         } else {
-            // Ladrão venceu (escapou ou pegou as moedas), policial perdeu
             do Output.printString("GAME OVER - JOGADOR 1 PERDEU!");
             do Output.moveCursor(12, 17);
             if (coinsCollected = 5) {
@@ -137,7 +126,6 @@ class GhostGame {
             }
         }
 
-        // Aguarda 3 segundos e reinicia automaticamente
         do Sys.wait(3000);
         do reset();
         return;
@@ -145,69 +133,34 @@ class GhostGame {
 
     // Move os jogadores no grid se a próxima casa não for parede
     method void movePlayers() {
-        // 1. Move o Policial (Apenas na Fase 2)
         if (phase = 2) {
             if (copDirection = 1) {
-                if (~(map.isWall(cop.getX() / 16, (cop.getY() - 16) / 16))) {
-                    do cop.moveUp();
-                } else {
-                    let copDirection = 0; // Bateu na parede, para
-                }
+                if (~(map.isWall(cop.getX() / 16, (cop.getY() - 16) / 16))) { do cop.moveUp(); } else { let copDirection = 0; }
             }
             if (copDirection = 2) {
-                if (~(map.isWall(cop.getX() / 16, (cop.getY() + 16) / 16))) {
-                    do cop.moveDown();
-                } else {
-                    let copDirection = 0;
-                }
+                if (~(map.isWall(cop.getX() / 16, (cop.getY() + 16) / 16))) { do cop.moveDown(); } else { let copDirection = 0; }
             }
             if (copDirection = 3) {
-                if (~(map.isWall((cop.getX() - 16) / 16, cop.getY() / 16))) {
-                    do cop.moveLeft();
-                } else {
-                    let copDirection = 0;
-                }
+                if (~(map.isWall((cop.getX() - 16) / 16, cop.getY() / 16))) { do cop.moveLeft(); } else { let copDirection = 0; }
             }
             if (copDirection = 4) {
-                if (~(map.isWall((cop.getX() + 16) / 16, cop.getY() / 16))) {
-                    do cop.moveRight();
-                } else {
-                    let copDirection = 0;
-                }
+                if (~(map.isWall((cop.getX() + 16) / 16, cop.getY() / 16))) { do cop.moveRight(); } else { let copDirection = 0; }
             }
         }
 
-        // 2. Move o Ladrão (Em ambas as fases)
         if (thiefDirection = 1) {
-            if (~(map.isWall(thief.getX() / 16, (thief.getY() - 16) / 16))) {
-                do thief.moveUp();
-            } else {
-                let thiefDirection = 0;
-            }
+            if (~(map.isWall(thief.getX() / 16, (thief.getY() - 16) / 16))) { do thief.moveUp(); } else { let thiefDirection = 0; }
         }
         if (thiefDirection = 2) {
-            if (~(map.isWall(thief.getX() / 16, (thief.getY() + 16) / 16))) {
-                do thief.moveDown();
-            } else {
-                let thiefDirection = 0;
-            }
+            if (~(map.isWall(thief.getX() / 16, (thief.getY() + 16) / 16))) { do thief.moveDown(); } else { let thiefDirection = 0; }
         }
         if (thiefDirection = 3) {
-            if (~(map.isWall((thief.getX() - 16) / 16, thief.getY() / 16))) {
-                do thief.moveLeft();
-            } else {
-                let thiefDirection = 0;
-            }
+            if (~(map.isWall((thief.getX() - 16) / 16, thief.getY() / 16))) { do thief.moveLeft(); } else { let thiefDirection = 0; }
         }
         if (thiefDirection = 4) {
-            if (~(map.isWall((thief.getX() + 16) / 16, thief.getY() / 16))) {
-                do thief.moveRight();
-            } else {
-                let thiefDirection = 0;
-            }
+            if (~(map.isWall((thief.getX() + 16) / 16, thief.getY() / 16))) { do thief.moveRight(); } else { let thiefDirection = 0; }
         }
 
-        // Controla velocidade do jogo (um delayzinho básico)
         do Sys.wait(60);
         return;
     }
@@ -220,7 +173,6 @@ class GhostGame {
         var int oldCX, oldCY, oldTX, oldTY;
         var int seed;
 
-        // Tela de início para gerar a semente aleatória dinamicamente
         do Screen.clearScreen();
         do Output.moveCursor(4, 15);
         do Output.printString("POLICIAL E LADRAO MULTIPLAYER");
@@ -235,82 +187,53 @@ class GhostGame {
         do Output.moveCursor(18, 12);
         do Output.printString("Pressione qualquer tecla para jogar...");
 
-        // Incrementa a semente até o jogador pressionar uma tecla
         let seed = 0;
         while (Keyboard.keyPressed() = 0) {
             let seed = seed + 1;
-            if (seed > 32700) {
-                let seed = 0;
-            }
+            if (seed > 32700) { let seed = 0; }
         }
 
-        // Inicializa o gerador aleatório com a semente capturada
         let random = Random.new(seed);
-
-        // Inicializa o primeiro mapa
         do reset();
         let exit = false;
 
         while (~exit) {
             let key = Keyboard.keyPressed();
-            
-            // ESC para sair
             if (key = 140) { let exit = true; }
 
-            // Controles do Policial (P1)
-            if (key = 131) { let copDirection = 1; } // Cima
-            if (key = 133) { let copDirection = 2; } // Baixo
-            if (key = 130) { let copDirection = 3; } // Esquerda
-            if (key = 132) { let copDirection = 4; } // Direita
-            if (key = 46)  { let copDirection = 0; } // Ponto (Parar)
+            if (key = 131) { let copDirection = 1; }
+            if (key = 133) { let copDirection = 2; }
+            if (key = 130) { let copDirection = 3; }
+            if (key = 132) { let copDirection = 4; }
+            if (key = 46)  { let copDirection = 0; }
 
-            // Controles do Ladrão (P2)
-            if (key = 87) { let thiefDirection = 1; } // W
-            if (key = 83) { let thiefDirection = 2; } // S
-            if (key = 65) { let thiefDirection = 3; } // A
-            if (key = 68) { let thiefDirection = 4; } // D
-            if (key = 69) { let thiefDirection = 0; } // E (Parar)
+            if (key = 87) { let thiefDirection = 1; }
+            if (key = 83) { let thiefDirection = 2; }
+            if (key = 65) { let thiefDirection = 3; }
+            if (key = 68) { let thiefDirection = 4; }
+            if (key = 69) { let thiefDirection = 0; }
 
-            // Salva coordenadas anteriores antes de mover (para checar cruzamento)
             let oldCX = cop.getX();
             let oldCY = cop.getY();
             let oldTX = thief.getX();
             let oldTY = thief.getY();
 
-            // Executa o movimento
             do movePlayers();
 
-            // 1. Checa colisão de moedas
             if (map.checkCoinCollection(thief.getX() / 16, thief.getY() / 16)) {
                 let coinsCollected = coinsCollected + 1;
                 do drawUI();
-                
-                // Se pegou as 5 moedas, o Ladrão ganha (Policial perde)!
-                if (coinsCollected = 5) {
-                    do gameOver(2);
-                }
+                if (coinsCollected = 5) { do gameOver(2); }
             }
 
-            // 2. Checa colisão entre Policial e Ladrão (Apenas na Fase 2)
             if (phase = 2) {
                 let collided = false;
-                
-                // Colisão direta (mesmo bloco)
-                if ((cop.getX() = thief.getX()) & (cop.getY() = thief.getY())) {
-                    let collided = true;
-                }
-                
-                // Colisão cruzada (quando passam um pelo outro)
-                if ((cop.getX() = oldTX) & (cop.getY() = oldTY) & (thief.getX() = oldCX) & (thief.getY() = oldCY)) {
-                    let collided = true;
-                }
+                if ((cop.getX() = thief.getX()) & (cop.getY() = thief.getY())) { let collided = true; }
+                if ((cop.getX() = oldTX) & (cop.getY() = oldTY) & (thief.getX() = oldCX) & (thief.getY() = oldCY)) { let collided = true; }
 
-                if (collided) {
-                    do gameOver(1); // Policial ganha!
-                }
+                if (collided) { do gameOver(1); }
             }
 
-            // 3. Controle do relógio (Aprox. 12 loops rodando com delay de 60ms = 1s)
             let loopCount = loopCount + 1;
             if (loopCount = 12) {
                 let loopCount = 0;
@@ -318,11 +241,9 @@ class GhostGame {
 
                 if (secondsLeft < 0) {
                     if (phase = 1) {
-                        // Fim da vantagem do ladrão. Começa a perseguição!
                         let phase = 2;
-                        let secondsLeft = 30; // 30 segundos de perseguição
+                        let secondsLeft = 30;
                     } else {
-                        // Tempo esgotado! Ladrão sobreviveu e venceu!
                         do gameOver(2);
                     }
                 }

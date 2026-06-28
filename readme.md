@@ -1,60 +1,44 @@
-# Projeto 6 - Policial e Ladrão Multiplayer (Nand2Tetris)
+# Projeto 6: "Ghostgame" 
 
-Este projeto é uma versão modificada do jogo Ghost para dois jogadores, desenvolvida em Jack para a unidade 6 da disciplina. Mudamos o tema original (Pacman) para um clássico **Policial e Ladrão** com mecânicas extras e mapas variados!
+Este projeto é uma modificação do jogo "Ghost" para dois jogadores, desenvolvido em Jack (do livro do NAND2TETRIS) para a Unidade 6 da disciplina de Elementos de Sistemas Computacionais. O tema foi adaptado para a dinâmica de Policial e Ladrão, incluindo mecânicas de coleta, sistema de colisão e mapas variados.
 
----
+## Como Jogar
 
-## Como Jogar e Controles
+O jogo é multiplayer local (ambos os jogadores dividem o mesmo teclado).
 
-O jogo é multiplayer local (dois jogadores no mesmo teclado).
+**Jogador 1 (Policial)**
+Objetivo: Capturar o ladrão antes que o tempo esgote ou que ele fuja com o dinheiro.
+* **Mover:** Setas Direcionais (Cima, Baixo, Esquerda, Direita)
+* **Parar:** Tecla `.` (Ponto)
 
-### Jogador 1 (Policial - P1)
-* **Objetivo**: Capturar o ladrão antes que o tempo acabe ou ele roube todo o dinheiro.
-* **Controles**:
-  * `Seta para Cima`: Move para cima
-  * `Seta para Baixo`: Move para baixo
-  * `Seta para Esquerda`: Move para esquerda
-  * `Seta para Direita`: Move para direita
-  * `Tecla Ponto (.)`: Para o movimento
+**Jogador 2 (Ladrão)**
+Objetivo: Roubar os 5 sacos de moedas espalhados pelo mapa ou sobreviver até o tempo acabar.
+* **Mover:** Teclas W, A, S, D
+* **Parar:** Tecla `E`
 
-### Jogador 2 (Ladrão - P2)
-* **Objetivo**: Roubar os 5 sacos de moedas espalhados pelo mapa antes do tempo acabar sem ser pego.
-* **Controles**:
-  * `Tecla W`: Move para cima
-  * `Tecla S`: Move para baixo
-  * `Tecla A`: Move para esquerda
-  * `Tecla D`: Move para direita
-  * `Tecla E`: Para o movimento
+## Funcionalidades Implementadas
 
----
+* **Sprites Customizados:** Arte gerada utilizando manipulação direta de memória (`Memory.poke`) para desenhar a viatura e o ladrão.
+* **Mapas Dinâmicos** O sistema sorteia um entre três layouts de mapas diferentes a cada inicialização.
+* **Colisão de Cenário:** Os blocos e as paredes contem colisão, bloqueando a movimentação automática caso o jogador tente atravessá-los.
+* **Condição de Vitória Alternativa:** A coleta das 5 moedas garante a vitória instantânea ao Ladrão.
+* **Seed Aleatória Dinâmica:** A semente (seed) do gerador pseudoaleatório é definida pelo tempo de reação do usuário na tela de início, garantindo partidas únicas.
+* **Vantagem Inicial:** O Ladrão recebe 3 segundos no início da rodada para se distanciar antes do Policial ser liberado para agir.
+* **Interface e Reinício:** O jogo exibe o resultado da rodada no centro da tela, reiniciando automaticamente após 3 segundos. Pressionar `ESC` encerra a aplicação.
 
-## O que a gente implementou para garantir o 10 (e os bônus)
+## Estrutura de Arquivos
 
-1. **Tema de Polícia e Ladrão**: Criamos sprites em pixel art do zero usando escrita de memória (`Memory.poke`). P1 é uma viatura de polícia e P2 é um ladrãozinho com capuz e máscara preta.
-2. **Seleção de 3 Mapas Diferentes (Bônus Extra)**: Em vez de um mapa fixo, o jogo sorteia aleatoriamente um entre 3 layouts de mapa diferentes toda vez que inicia.
-3. **Lógica de Colisão de Paredes**: Os blocos do mapa funcionam como barreiras reais. Se um jogador tenta ir contra a parede, ele é bloqueado e seu movimento automático para.
-4. **Coleta de Moedas**: Desenhamos 5 moedas/sacos de ouro no mapa. Se o Ladrão pegar as 5, ele vence o jogo na hora.
-5. **Geração Dinâmica de Semente (Random Seed)**: O Nand2Tetris não tem gerador de números aleatórios nativo. Criamos um menu de início ("Pressione qualquer tecla para jogar...") onde um contador roda super rápido. O tempo que o jogador leva para pressionar a tecla vira a semente aleatória. Isso garante que os mapas e posições de spawn nunca se repitam de forma idêntica!
-6. **Vantagem Inicial de 3 Segundos**: O ladrão tem 3 segundos no começo da rodada para se movimentar e se distanciar enquanto o policial fica congelado.
-7. **Reinício e ESC**: Se alguém perder ou ganhar, o jogo exibe quem perdeu no centro da tela e reinicia em 3 segundos. Se apertar `ESC` a qualquer momento, o jogo fecha.
+* `Main.jack`: Inicializa a classe controladora e encerra o loop do jogo.
+* `GhostGame.jack`: Gerencia a lógica central, captura de teclado, estágios do relógio e sistema de colisões.
+* `Map.jack`: Responsável por desenhar as paredes, posicionar os itens e validar as coordenadas de colisão.
+* `Ghost.jack`: Representa a viatura policial (P1) e gerencia suas coordenadas no grid.
+* `Thief.jack`: Representa o ladrão (P2) e gerencia sua movimentação.
+* `Random.jack`: Gerador de números pseudoaleatórios utilizado no sorteio de mapas e pontos de spawn.
 
----
+## Como Executar no Simulador
 
-## Estrutura do Código
-
-* `Main.jack`: Inicializa o jogo chamando a classe controladora.
-* `GhostGame.jack`: A classe principal que gerencia o loop do jogo, as teclas pressionadas, as fases do relógio, a colisão de moedas/jogadores e a tela de Game Over. (Mantivemos o nome do arquivo para respeitar a estrutura modular do projeto exigida no classroom).
-* `Map.jack`: Desenha as paredes, posiciona os saquinhos de moeda e checa se a coordenada que o player quer ir é uma parede ou se ele coletou alguma moeda.
-* `Cop.jack`: Desenha a viatura policial (P1) e gerencia as coordenadas dele.
-* `Thief.jack`: Desenha o ladrão (P2) e gerencia as coordenadas e movimento dele.
-* `Random.jack`: Gerador de números pseudo-aleatórios usado para sortear o mapa e os locais de nascimento dos jogadores.
-
----
-
-## Como Rodar
-
-1. Use o `JackCompiler` do Nand2Tetris na pasta do projeto para compilar todos os arquivos `.jack` em arquivos `.vm`.
-2. Abra o `VMEmulator` (versão de desktop recomendada).
-3. Vá em *File* -> *Load Program* e selecione a pasta raiz deste projeto.
-4. Coloque a velocidade de animação no máximo (**Fastest**) e no painel do fluxo escolha **No Animation** (Sem Animar) para o jogo rodar liso e rápido.
-5. Clique em executar (botão de Play) e divirta-se!
+1.  Compile o diretório do projeto utilizando o utilitário `JackCompiler`.
+2.  Abra o `VMEmulator` e carregue a pasta raiz (*File -> Load Program*).
+3.  Ajuste a velocidade da animação para **Fastest**.
+4.  No painel de fluxo (Animate), selecione a opção **No Animation** para garantir a fluidez do jogo.
+5.  Clique em executar (Play) e divirta-se!
